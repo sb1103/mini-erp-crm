@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  SALES
+  MANAGER
+}
+
+model User {
+  id          Int        @id @default(autoincrement())
+  name        String
+  email       String     @unique
+  password    String
+  role        Role       @default(SALES)
+
+  customers   Customer[]
+  challans    SalesChallan[]
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Customer {
+  id           Int              @id @default(autoincrement())
+  customerName String
+  phone        String
+  email        String?
+  address      String
+  gstNumber    String?
+
+  createdById  Int
+  createdBy    User             @relation(fields: [createdById], references: [id])
+
+  challans     SalesChallan[]
+
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+}
+
+model Product {
+  id          Int                @id @default(autoincrement())
+  name        String
+  sku         String             @unique
+  price       Float
+  stock       Int                @default(0)
+
+  challanItems SalesChallanItem[]
+
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+}
+
+model SalesChallan {
+  id            Int                 @id @default(autoincrement())
+
+  customerId    Int
+  customer      Customer            @relation(fields: [customerId], references: [id])
+
+  createdById   Int
+  createdBy     User                @relation(fields: [createdById], references: [id])
+
+  totalAmount   Float
+
+  items         SalesChallanItem[]
+
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+}
+
+model SalesChallanItem {
+  id          Int             @id @default(autoincrement())
+
+  challanId   Int
+  challan     SalesChallan    @relation(fields: [challanId], references: [id])
+
+  productId   Int
+  product     Product         @relation(fields: [productId], references: [id])
+
+  quantity    Int
+  price       Float
+}

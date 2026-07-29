@@ -1,0 +1,16 @@
+import "dotenv/config";
+
+console.log(process.env.DATABASE_URL);
+
+import prisma from "./config/prisma";
+
+async function main() {
+  const users = await prisma.user.findMany();
+  console.log(users);
+}
+
+main()
+  .catch(console.error)
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
